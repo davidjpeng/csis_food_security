@@ -271,9 +271,9 @@ plus_15_country <- fies_data %>%
   filter(!is.na(Raw_score)) %>% 
   group_by(as_factor(DEGURBA)) %>% #our newly appended DEGURBA labels using Worldpop data 
   summarise(prevalence_mod_sev = (sum(Prob_Mod_Sev*wt,na.rm=T)) / (sum(wt,na.rm=T)),
-            prevalence_mod_sev_moe = moe(prob = Prob_Mod_Sev, rs=Raw_score, wt=wt, sd=2, conf.level=.95),
+            prevalence_mod_sev_moe = moe(prob = Prob_Mod_Sev, rs=Raw_score, wt=wt, sd=sqrt(2), conf.level=.95),
             prevalence_sev = (sum(Prob_sev*wt,na.rm=T)) / (sum(wt,na.rm=T)),
-            prevalence_sev_moe = moe(prob = Prob_sev, rs=Raw_score, wt=wt, sd=2, conf.level=.95)
+            prevalence_sev_moe = moe(prob = Prob_sev, rs=Raw_score, wt=wt, sd=sqrt(2), conf.level=.95)
   ) %>%
   ungroup() 
 
@@ -301,9 +301,9 @@ under_14_country <- fies_data %>%
   filter(!is.na(Raw_score)) %>%
   group_by(as_factor(DEGURBA)) %>%
   summarise(prevalence_mod_sev = (sum(Prob_Mod_Sev*child_weight,na.rm=T)) / (sum(child_weight,na.rm=T)), 
-            prevalence_mod_sev_moe = moe(prob = Prob_Mod_Sev, rs=Raw_score, wt=child_weight, sd=2, conf.level=.95),
+            prevalence_mod_sev_moe = moe(prob = Prob_Mod_Sev, rs=Raw_score, wt=child_weight, sd=sqrt(2), conf.level=.95),
             prevalence_sev = (sum(Prob_sev*child_weight,na.rm=T)) / (sum(child_weight,na.rm=T)),
-            prevalence_sev_moe = moe(prob = Prob_sev, rs=Raw_score, wt=child_weight, sd=2, conf.level=.95)
+            prevalence_sev_moe = moe(prob = Prob_sev, rs=Raw_score, wt=child_weight, sd=sqrt(2), conf.level=.95)
   ) %>%
   ungroup() 
 
@@ -497,16 +497,31 @@ people_estimates_totalpopulation <- prevalence_summary_long %>%
   ungroup() %>%
   mutate(lower_bound = people_estimate - MOE_total, upper_bound = people_estimate + MOE_total) 
 
-# INTERNAL 
+# # INTERNAL 
+# 
+# ## Export Tables 
+# 
+# ### People estimates
+# write_csv(people_estimates_totalpopulation, "/home/davidpeng/Desktop/Food/results_for_ilab/pak/pak_people_estimates_totalpopulation.csv")
+# write_csv(people_estimates_by_agegrp, "/home/davidpeng/Desktop/Food/results_for_ilab/pak/pak_people_estimates_by_agegrp.csv")
+# 
+# ### Population x DEGURBA 
+# write_csv(degurba_by_agegrp_buffered, "/home/davidpeng/Desktop/Food/results_for_ilab/pak/pak_degurba_population_by_agegrp.csv")
+# 
+# ### DEGURBA x Small spatial units 
+# write_csv(units_classification_country, "/home/davidpeng/Desktop/Food/results_for_ilab/pak/pak_small_spatial_classified_DEGURBA.csv")
 
-## Export Tables 
+#write_csv(as.data.frame(un_degurba, xy=TRUE), "/home/davidpeng/Desktop/Food/results_for_ilab/pak/pak_level_1_phase1.csv")
 
-### People estimates
-write_csv(people_estimates_totalpopulation, "/home/davidpeng/Desktop/Food/results_for_ilab/pak/pak_people_estimates_totalpopulation.csv")
-write_csv(people_estimates_by_agegrp, "/home/davidpeng/Desktop/Food/results_for_ilab/pak/pak_people_estimates_by_agegrp.csv")
+# terra::writeRaster(un_degurba, "/home/davidpeng/Desktop/Food/results_for_ilab/pak/pak_level_1_phase1.tif", filetype = "GTiff", overwrite = TRUE)
+# 
+# test <- ggplot(as.data.frame(un_degurba, xy=TRUE), aes(x = x, y = y, fill = layer)) +
+#   geom_tile() +  # Use tiles to represent raster cells
+#   scale_fill_viridis_c() +  # Use a color scale
+#   coord_fixed() +  # Ensure square cells
+#   theme_minimal()
+# 
+# 
+# ggsave("/home/davidpeng/Desktop/test_degurba_1km2", plot = test, 
+#        width = 50, height = 50, dpi = 500, device = "jpeg") 
 
-### Population x DEGURBA 
-write_csv(degurba_by_agegrp_buffered, "/home/davidpeng/Desktop/Food/results_for_ilab/pak/pak_degurba_population_by_agegrp.csv")
-
-### DEGURBA x Small spatial units 
-write_csv(units_classification_country, "/home/davidpeng/Desktop/Food/results_for_ilab/pak/pak_small_spatial_classified_DEGURBA.csv")
